@@ -156,15 +156,15 @@ Além dos requisitos dos usuários internos, foram mapeadas as seguintes
 necessidades técnicas para que a solução seja aderente:
 
 1. Sobre a API:
-   a. deve ser construída com base no protocolo HTTP.
-   b. deve negociar dados no formato JSON.
-   c. deve seguir um padrão de organização coeso (e.g. REST).
+   - deve ser construída com base no protocolo HTTP.
+   - deve negociar dados no formato JSON.
+   - deve seguir um padrão de organização coeso (e.g. REST).
 2. Sobre a persistência:
-   a. deve utilizar uma base de dados relacional (e.g. PostgreSQL).
+   - deve utilizar uma base de dados relacional (e.g. PostgreSQL).
 3. Sobre os scripts:
-   a. devem executar de forma assíncrona.
-   b. devem executar em um ambiente seguro (e.g. proibir o uso de software de
-      terceiros).
+   - devem executar de forma assíncrona.
+   - devem executar em um ambiente seguro (e.g. proibir o uso de software de
+     terceiros).
 
 * Extras
 
