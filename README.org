@@ -175,7 +175,7 @@ por incluir algum extra:
 - Publicar um endpoint para consulta da documentação da API seguindo a
   especificação OpenAPI.
 
-- Implementar validações de formato no scripts submetidos à API.
+- Implementar validações de formato nos scripts submetidos à API.
 
 - Incluir uma ou mais suítes de testes automatizados.
 
@@ -222,12 +222,13 @@ Boa sorte com o desafio e obrigado por participar!
 
 ** Sobre o problema
 
-- Posso utilizar uma linguagem de programação que não está contemplada na lista?
+- Posso utilizar uma linguagem de programação que não está contemplada na
+  descrição da vaga?
   + Sim. Recomendamos a utilização de linguagens similares as sugeridas -
-    principalmente descendentes da fámilia ML -, por representarem um cenário
-    mais próximo ao que você vai encontrar na Datarisk. No entanto, entendemos
-    que boa parte das habilidades necessárias para resolver o desafio são
-    transferíveis.
+    principalmente descendentes da fámilia ML (Meta Language) -, por
+    representarem um cenário mais próximo ao que você vai encontrar na Datarisk.
+    No entanto, entendemos que boa parte das habilidades necessárias para
+    resolver o desafio são transferíveis.
 
 - Devo me preocupar com alguma restrição de bibliotecas ou frameworks?
   + Não. Você é livre para organizar a solução da maneira que achar pertinente.
