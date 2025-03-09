@@ -1,6 +1,4 @@
-#+title: Teste prático backend Datarisk
-
-* Introdução
+#+title: Teste prático para backend Datarisk
 
 O time de tecnologia da Datarisk é responsável pela implementação, manutenção, e
 evolução de uma plataforma de Machine Learning Operations (MLOps). Neste
@@ -51,14 +49,14 @@ do módulo de pré-processamento de dados.
 A gerente de produto do projeto registrou a demanda do cliente - um time interno
 de engenheiro de dados -, em uma história de usuário:
 
-#+begin_src json
+#+begin_quote
 Como clientes da API, queremos hospedar arquivos JavaScript contendo algoritmos
 de pré-processamento para executá-los posteriormente. Os algoritmos vão consumir
 e produzir massas de dados no formato JSON. Uma vez que um script for hospedado,
 precisamos ser capazes de identificá-lo para submeter os dados para
 transformação. É fundamental que possamos consultar o resultado de cada
 pré-processamento.
-#+end_src
+#+end_quote
 
 Os engenheiros de dados também apresentaram um caso de uso envolvendo um modelo
 que consome dados de estatísticas de meios de pagamento fornecidos pelo Banco
