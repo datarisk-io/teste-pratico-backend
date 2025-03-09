@@ -1,0 +1,254 @@
+#+title: Teste prático backend Datarisk
+
+* Introdução
+
+O time de tecnologia da Datarisk é responsável pela implementação, manutenção, e
+evolução de uma plataforma de Machine Learning Operations (MLOps). Neste
+desafio, esperamos que você desenvolva um recorte simplificado de uma das etapas
+da esteira de produtização de um modelo de Machine Learning (ML), o
+~pré-processamento de dados~.
+
+O desafio não pressupõe que você tenha experiência com ML ou MLOps. O objetivo é
+mensurar seus conhecimentos acerca de princípios e conceitos de desenvolvimento
+de APIs REST, paradigma de programação funcional, e bancos de dados relacionais.
+Também temos interesse em avaliar sua capacidade de comunicar ideias,
+adaptabilidade, e organização.
+
+Esperamos que o desafio lhe permita experimentar um problema comum do domínio de
+negócio da Datarisk, e que abra a possibilidade para você expressar suas
+capacidades técnicas.
+
+* Contexto
+
+Projetar um algoritmo de Machine Learning que resolva um problema real é apenas
+o início. Para torná-lo em um produto comercializável e viável ao longo do
+tempo, é essencial que haja colaboração de profissionais de diferentes
+disciplinas como Ciência e Engenharia de dados, DevOps, e Engenharia de
+software. O conjunto de práticas, técnicas, e conhecimento nutrido por esta
+relação interdisciplinar é capturado pelo termo guarda-chuva "MLOps". Através da
+aplicação de MLOps, empresas buscam desenvolver, implantar, e monitorar modelos
+de forma consistente, confiável, e reproduzível. É a partir dos fundamentos de
+MLOps que profissionais constroem soluções para o gerenciamento do ciclo de vida
+de modelos.
+
+Uma etapa importante deste ciclo é o pré-processamento de dados, que envolve a
+transformação de dados brutos, potencialmente com origem em múltiplas fontes, em
+um formato adequado para o treinamento de modelos. Existem diversas estratégias
+de pré-processamento como limpeza, particionamento, ou categorização de dados,
+que variam de acordo com as necessidades do modelo e das características das
+fontes de dados.
+
+No escopo deste desafio, vamos considerar apenas transformações simples, como o
+mapeamento de informações ou a aplicação de filtros nos dados de entrada.
+
+* Problema
+
+Considere o cenário hipotético de que você faz parte de um time de
+desenvolvimento responsável pela construção de uma API que oferece MLOps como
+serviço. Foram atribuídos a você o planejamento e execução de uma versão inicial
+do módulo de pré-processamento de dados.
+
+A gerente de produto do projeto registrou a demanda do cliente - um time interno
+de engenheiro de dados -, em uma história de usuário:
+
+#+begin_src json
+Como clientes da API, queremos hospedar arquivos JavaScript contendo algoritmos
+de pré-processamento para executá-los posteriormente. Os algoritmos vão consumir
+e produzir massas de dados no formato JSON. Uma vez que um script for hospedado,
+precisamos ser capazes de identificá-lo para submeter os dados para
+transformação. É fundamental que possamos consultar o resultado de cada
+pré-processamento.
+#+end_src
+
+Os engenheiros de dados também apresentaram um caso de uso envolvendo um modelo
+que consome dados de estatísticas de meios de pagamento fornecidos pelo Banco
+Central do Brasil. O caso de uso ajuda a demonstrar suas expectativas em relação
+a utilização da API:
+
+- "Preparamos um arquivo ~.js~ com o algoritmo de pré-processamento. Nossa
+  intenção é invocar a API de MLOps para hospedar este script. Precisamos que o
+  script seja de alguma forma persistido, e que possamos identificá-lo no momento
+  da execução."
+
+#+begin_src javascript
+// Algoritmo de pré-processamento
+function process(data) {
+  const corporativeData = data.filter(item => item.produto === "Empresarial");
+
+  const byQuarterAndIssuer = corporativeData.reduce((acc, item) => {
+    const key = `${item.trimestre}-${item.nomeBandeira}`;
+    if (!acc[key]) {
+      acc[key] = {
+        trimestre: item.trimestre,
+        nomeBandeira: item.nomeBandeira,
+        qtdCartoesEmitidos: 0,
+        qtdCartoesAtivos: 0,
+        qtdTransacoesNacionais: 0,
+        valorTransacoesNacionais: 0,
+      };
+    }
+    acc[key].qtdCartoesEmitidos += item.qtdCartoesEmitidos;
+    acc[key].qtdCartoesAtivos += item.qtdCartoesAtivos;
+    acc[key].qtdTransacoesNacionais += item.qtdTransacoesNacionais;
+    acc[key].valorTransacoesNacionais += item.valorTransacoesNacionais;
+    return acc;
+  }, {});
+
+  return Object.values(byQuarterAndIssuer);
+}
+#+end_src
+
+- "O pré-processamento do modelo vai receber dados extraídos da Plataforma Ágil
+  de Serviços de Dados do Bacen. Vamos direcionar dados da quantidade de
+  transações de cartões de crédito para a API de MLOps."
+
+- "Para contexto, o script descarta cartões de crédito que não sejam
+  empresariais, agrupa os dados pelo trimestre e nome da bandeira, e remove as
+  informações de transações internacionais."
+
+#+begin_src json
+// Exemplo payload de pré-processamento
+[
+   {
+      "trimestre":"20231",
+      "nomeBandeira":"American Express",
+      "nomeFuncao":"Crédito",
+      "produto":"Intermediário",
+      "qtdCartoesEmitidos":433549,
+      "qtdCartoesAtivos":335542,
+      "qtdTransacoesNacionais":9107357,
+      "valorTransacoesNacionais":1617984610.42,
+      "qtdTransacoesInternacionais":76424,
+      "valorTransacoesInternacionais":41466368.94
+   },
+   {
+      "trimestre":"20232",
+      "nomeBandeira":"VISA",
+      "nomeFuncao":"Crédito",
+      "produto":"Empresarial",
+      "qtdCartoesEmitidos":3050384,
+      "qtdCartoesAtivos":1716709,
+      "qtdTransacoesNacionais":43984902,
+      "valorTransacoesNacionais":12846611557.78,
+      "qtdTransacoesInternacionais":470796,
+      "valorTransacoesInternacionais":397043258.04
+   }
+   //, ...
+]
+#+end_src
+
+- "A massa de dados vai ser enviada juntamente com o identificador do script que
+  deve processá-los."
+
+- "Não sabemos quanto tempo vai levar para o pré-processamento ser concluído,
+  então precisamos de uma forma de identificar uma execução de pré-processamento
+  para obter seu status."
+
+- "O status pode ser tanto o resultado da transformação dos dados, incluindo
+  possíveis falhas, ou uma indicação de que o pré-processamento ainda está em
+  andamento."
+
+- "Os demais casos de uso que precisamos suportar necessitam de scripts de
+  complexidade similar."
+
+- "É importante mantermos a informação de quando um pré-processamento foi
+  executado para eventual rastreio."
+
+Além dos requisitos dos usuários internos, foram mapeadas as seguintes
+necessidades técnicas para que a solução seja aderente:
+
+1. Sobre a API:
+   a. deve ser construída com base no protocolo HTTP.
+   b. deve negociar dados no formato JSON.
+   c. deve seguir um padrão de organização coeso (e.g. REST).
+2. Sobre a persistência:
+   a. deve utilizar uma base de dados relacional (e.g. PostgreSQL).
+3. Sobre os scripts:
+   a. devem executar de forma assíncrona.
+   b. devem executar em um ambiente seguro (e.g. proibir o uso de software de
+      terceiros).
+
+* Extras
+
+A implementação destes itens é opcional e concede pontos extras na sua
+avaliação. Caso não consigo resolver alguma parte do problema, você pode optar
+por incluir algum extra:
+
+- Publicar um endpoint para consulta da documentação da API seguindo a
+  especificação OpenAPI.
+
+- Implementar validações de formato no scripts submetidos à API.
+
+- Incluir uma ou mais suítes de testes automatizados.
+
+- Responder parcial ou totalmente o questionário abaixo.
+
+** Questionário
+
+1. Como você faria para lidar com grandes volumes de dados enviados para
+   pré-processamento? O design atual da API é suficiente?
+
+2. Que medidas você implementaria para se certificar que a aplicação não execute
+   scripts maliciosos?
+
+3. Como aprimorar a implementação para suportar um alto volume de execuções
+   concorrentes de scripts?
+
+4. Como você evoluiria a API para suportar o versionamento de scripts?
+
+5. Que tipo de política de backup de dados você aplicaria neste cenário?
+
+6. Como tratar massas de dados com potenciais informações sensíveis na API e no
+   banco de dados?
+
+7. Como você enxerga o paradigma funcional beneficiando a solução deste
+   problema?
+
+* Entrega da solução
+
+Hospede a solução em um repositório público na sua plataforma de preferência e
+compartilhe o endereço conosco.
+
+Containerize a API e suas dependências. Considere disponibilizar um script
+para automatizar a inicialização do ambiente.
+
+Inclua uma breve documentação sobre como o usuário da API pode reproduzir o caso
+de uso apresentado.
+
+Se tiver respondido algo do questionário extra, por favor adicione um arquivo
+com as respostas no repositório.
+
+Boa sorte com o desafio e obrigado por participar!
+
+* Perguntas frequentes
+
+** Sobre o problema
+
+- Posso utilizar uma linguagem de programação que não está contemplada na lista?
+  + Sim. Recomendamos a utilização de linguagens similares as sugeridas -
+    principalmente descendentes da fámilia ML -, por representarem um cenário
+    mais próximo ao que você vai encontrar na Datarisk. No entanto, entendemos
+    que boa parte das habilidades necessárias para resolver o desafio são
+    transferíveis.
+
+- Devo me preocupar com alguma restrição de bibliotecas ou frameworks?
+  + Não. Você é livre para organizar a solução da maneira que achar pertinente.
+    Apenas esperamos que você seja capaz de justificar as escolhas.
+
+- Há alguma restrição quanto aos recursos ou ferramental que posso utilizar para
+  resolver o problema?
+  + Não. Fique à vontade para empregar as ferramentas e técnicas que você tiver
+    mais domínio. Reforçamos que o fundamental é que você consiga explicar sua
+    metodologia e justificar suas escolhas.
+
+** Sobre o processo
+
+- Devo entregar o projeto caso não consiga finalizá-lo no prazo estipulado?
+  + Sim. Vamos avaliar o que for entregue independente da conclusão. Portanto,
+    se encontrar algum bloqueio ou não conseguir atender algum requisito, não
+    deixe de submeter seu projeto.
+
+- O que fazer em caso de dúvias sobre o projeto?
+  + Alguns detalhes do desafio foram deixados em aberto propositalmente. No
+    entanto, se você perceber algum problema ou precisar de alguma clarificação,
+    nos contate pelo canal de comunicação do processo seletivo.
